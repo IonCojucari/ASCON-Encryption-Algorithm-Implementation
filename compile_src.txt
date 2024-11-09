@@ -1,0 +1,38 @@
+#!/bin/bash
+
+export PROJECTNAME="."
+
+
+echo "the project location is : $PROJECTNAME"
+echo "removing libs"
+vdel -lib $PROJECTNAME/LIB/LIB_RTL -all
+vdel -lib $PROJECTNAME/LIB/LIB_BENCH -all
+
+echo "creating library "
+
+vlib $PROJECTNAME/LIB/LIB_RTL
+vmap LIB_RTL $PROJECTNAME/LIB/LIB_RTL
+vlib $PROJECTNAME/LIB/LIB_BENCH
+vmap LIB_BENCH $PROJECTNAME/LIB/LIB_BENCH
+
+# compilation des fichiers sources
+echo "compile vhdl sources"
+vlog -sv +acc -svinputport=net -work LIB_RTL $PROJECTNAME/SRC/RTL/ascon_pack.sv 
+#vlog -sv +acc -svinputport=net -work LIB_RTL $PROJECTNAME/SRC/RTL/add_const.sv 
+vlog -sv +acc -svinputport=net -work LIB_RTL $PROJECTNAME/SRC/RTL/xor_begin.sv 
+
+    
+
+# Compilation des fichiers TB
+echo "compile vhdl test bench"
+
+vlog -sv +acc -svinputport=net -L LIB_RTL -work LIB_BENCH $PROJECTNAME/SRC/BENCH/xor_begin_tb.sv
+
+# lancement du simulateur
+echo "compilation finished"
+echo "start simulation..."
+
+# ATTENTION un seul VSIM decommenté à la fois!
+
+vsim -L lib_rtl lib_bench.xor_begin_tb
+
